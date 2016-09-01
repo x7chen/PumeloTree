@@ -8,10 +8,9 @@ import android.bluetooth.BluetoothGattService;
 import android.util.Log;
 
 import com.pumelotech.dev.pumelotree.MyApplication;
-import com.pumelotech.dev.pumelotree.Transfer.CallbackInterface.TransferCallback;
+import com.pumelotech.dev.pumelotree.Transfer.CallbackInterface.*;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +24,7 @@ public class ESLHandler implements TransferCallback {
     private final static String TAG = MyApplication.DebugTag;
     public static final UUID ESL_SERVICE_UUID = UUID.fromString("DA1A1800-AF00-40C6-BCDA-E093AF5A45DB");
     public static final UUID SCREEN_CHAR_UUID = UUID.fromString("DA1A1801-AF00-40C6-BCDA-E093AF5A45DB");
-    public static final UUID ERROR_CHAR_UUID = UUID.fromString("DA1A1802-AF00-40C6-BCDA-E093AF5A45DB");
+    public static final UUID CONTROL_POINT_CHAR_UUID = UUID.fromString("DA1A1802-AF00-40C6-BCDA-E093AF5A45DB");
     public static final UUID PRICE_CHAR_UUID = UUID.fromString("DA1A1803-AF00-40C6-BCDA-E093AF5A45DB");
     public static final UUID PRODUCT_ID_CHAR_UUID = UUID.fromString("DA1A1804-AF00-40C6-BCDA-E093AF5A45DB");
     public static final UUID TYPE_CHAR_UUID = UUID.fromString("DA1A1805-AF00-40C6-BCDA-E093AF5A45DB");
@@ -33,7 +32,7 @@ public class ESLHandler implements TransferCallback {
     public static final UUID LOCATION_CHAR_UUID = UUID.fromString("DA1A1807-AF00-40C6-BCDA-E093AF5A45DB");
 
     private BluetoothGattCharacteristic screenCharacteristic;
-    private BluetoothGattCharacteristic errorCharacteristic;
+    private BluetoothGattCharacteristic controlCharacteristic;
     private BluetoothGattCharacteristic priceCharacteristic;
     private BluetoothGattCharacteristic productCharacteristic;
     private BluetoothGattCharacteristic typeCharacteristic;
@@ -42,12 +41,11 @@ public class ESLHandler implements TransferCallback {
 
     private BluetoothGatt mBluetoothGatt;
 
-
+    private ArrayList<Byte> screenData;
     private boolean isLastPacket = false;
     private long mFileSize = 0;
     private long mTotalPackets = 0;
     private long mPacketNumber = 0;
-    HexInputStream mFileStream;
     private final int BYTES_IN_ONE_PACKET = 20;
 
     public final static String ERROR_DISCOVERY_SERVICE = "Error on discovering services";
@@ -62,9 +60,26 @@ public class ESLHandler implements TransferCallback {
 
     @Override
     public void onCharacteristicChanged(BluetoothGattCharacteristic characteristic) {
-        if(characteristic.getUuid().equals(ERROR_CHAR_UUID)){
-
+        int request, opCode;
+        if (characteristic.getUuid().equals(CONTROL_POINT_CHAR_UUID)) {
+            opCode = characteristic.getValue()[0];
+            request = characteristic.getValue()[1];
+            if(opCode == 1){
+                if(!isLastPacket) {
+                    sendPacket();
+                }
+            }
         }
+    }
+
+    @Override
+    public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+
+    }
+
+    @Override
+    public void onCharacteristicWrite(BluetoothGattCharacteristic characteristic, int status) {
+
     }
 
     @Override
@@ -82,10 +97,6 @@ public class ESLHandler implements TransferCallback {
         }
     }
 
-    @Override
-    public void onCharacteristicWrite(BluetoothGattCharacteristic characteristic) {
-
-    }
 
     ESLHandler() {
         leConnector = MyApplication.gLeConnector;
@@ -116,8 +127,8 @@ public class ESLHandler implements TransferCallback {
                             Log.i(TAG, "CHAR:" + characteristic.getUuid().toString());
                             if (characteristic.getUuid().equals(SCREEN_CHAR_UUID)) {
                                 screenCharacteristic = characteristic;
-                            } else if (characteristic.getUuid().equals(ERROR_CHAR_UUID)) {
-                                errorCharacteristic = characteristic;
+                            } else if (characteristic.getUuid().equals(CONTROL_POINT_CHAR_UUID)) {
+                                controlCharacteristic = characteristic;
                                 mBluetoothGatt.setCharacteristicNotification(characteristic, true);
                                 List<BluetoothGattDescriptor> descriptors = characteristic.getDescriptors();
                                 for (BluetoothGattDescriptor dp : descriptors) {
@@ -145,7 +156,8 @@ public class ESLHandler implements TransferCallback {
     public void readPrice() {
         mBluetoothGatt.readCharacteristic(priceCharacteristic);
     }
-    public void readType(){
+
+    public void readType() {
         mBluetoothGatt.readCharacteristic(typeCharacteristic);
     }
 
@@ -171,6 +183,7 @@ public class ESLHandler implements TransferCallback {
             mBluetoothGatt.writeCharacteristic(screenCharacteristic);
         }
     }
+
     private int getNumberOfPackets() {
         int numOfPackets = (int) (mFileSize / BYTES_IN_ONE_PACKET);
         if ((mFileSize % BYTES_IN_ONE_PACKET) > 0) {
@@ -186,44 +199,33 @@ public class ESLHandler implements TransferCallback {
     /**
      * Here selected IntelHex file will be converted into Binary format
      */
-    public void openFile(InputStream stream) {
-        try {
-            mPacketNumber = 0;
-            //HexInputStream class convert file format from Hex to Binary
-            mFileStream = new HexInputStream(stream);
-            mFileSize = mFileStream.available();
-            mTotalPackets = getNumberOfPackets();
-            Log.d(TAG, "File Size: " + mFileSize);
-        } catch (IOException e) {
-            Log.e(TAG, ERROR_FILE_OPEN + " " + e);
+    public void setScreenData(byte[] data) {
+        screenData.clear();
+        for (Byte b : data) {
+            screenData.add(b);
         }
+        mPacketNumber = 0;
+        //HexInputStream class convert file format from Hex to Binary
+        mFileSize = data.length;
+        mTotalPackets = getNumberOfPackets();
     }
 
-    /**
-     * close the file stream
-     */
-    public void closeFile() {
-        if (mFileStream != null) {
-            try {
-                mFileStream.close();
-                mFileStream = null;
-            } catch (IOException e) {
-                Log.e(TAG, ERROR_FILE_CLOSE + " " + e.toString());
-            }
-        }
-    }
 
     /**
      * reads the next packet with max 20 bytes
      */
     private byte[] getNextPacket() {
-        try {
-            byte[] buffer = new byte[20];
-            mFileStream.readPacket(buffer);
-            return buffer;
-        } catch (IOException e) {
-            Log.e(TAG, ERROR_FILE_READ);
+        byte[] buffer = new byte[20];
+        List<Byte> sublist;
+        if(mPacketNumber==(mTotalPackets-1)){
+            sublist = screenData.subList((int) mPacketNumber * BYTES_IN_ONE_PACKET,(int)mFileSize);
+        }else {
+            sublist = screenData.subList((int) mPacketNumber * BYTES_IN_ONE_PACKET, (int) (mPacketNumber+1) * BYTES_IN_ONE_PACKET);
         }
-        return null;
+        for(int i=0;i<sublist.size();i++){
+            buffer[i] = sublist.get(i);
+        }
+        return buffer;
+
     }
 }

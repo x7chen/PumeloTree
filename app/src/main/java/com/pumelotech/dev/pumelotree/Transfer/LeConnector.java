@@ -68,8 +68,9 @@ public class LeConnector extends BluetoothGattCallback {
         }
     };
     private TransferCallback mTransferCallback = new TransferCallback() {
+
         @Override
-        public void onCharacteristicWrite(BluetoothGattCharacteristic characteristic) {
+        public void onCharacteristicWrite(BluetoothGattCharacteristic characteristic, int status) {
 
         }
 
@@ -80,6 +81,11 @@ public class LeConnector extends BluetoothGattCallback {
 
         @Override
         public void onCharacteristicChanged(BluetoothGattCharacteristic characteristic) {
+
+        }
+
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
 
         }
     };
@@ -134,7 +140,7 @@ public class LeConnector extends BluetoothGattCallback {
 
     @Override
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-        mTransferCallback.onCharacteristicWrite(characteristic);
+        mTransferCallback.onCharacteristicWrite(characteristic,status);
         super.onCharacteristicWrite(gatt, characteristic, status);
     }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.pumelotech.dev.pumelotree.Transfer;
+package com.pumelotech.dev.pumelotree.transfer;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -32,8 +32,8 @@ import android.widget.Toast;
 
 import com.pumelotech.dev.pumelotree.MyApplication;
 import com.pumelotech.dev.pumelotree.R;
-import com.pumelotech.dev.pumelotree.Transfer.CallbackInterface.ConnectionCallback;
-import com.pumelotech.dev.pumelotree.Transfer.CallbackInterface.TransferCallback;
+import com.pumelotech.dev.pumelotree.transfer.callback.ConnectionCallback;
+import com.pumelotech.dev.pumelotree.transfer.callback.TransferCallback;
 
 import java.util.List;
 

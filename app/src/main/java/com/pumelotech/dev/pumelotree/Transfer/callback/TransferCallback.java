@@ -1,4 +1,4 @@
-package com.pumelotech.dev.pumelotree.Transfer.CallbackInterface;
+package com.pumelotech.dev.pumelotree.transfer.callback;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;

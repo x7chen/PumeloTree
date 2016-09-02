@@ -1,4 +1,4 @@
-package com.pumelotech.dev.pumelotree.Downloader;
+package com.pumelotech.dev.pumelotree.downloader;
 
 /**
  * Created by Administrator on 2016/8/31.

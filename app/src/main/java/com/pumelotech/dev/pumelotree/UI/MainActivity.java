@@ -1,4 +1,4 @@
-package com.pumelotech.dev.pumelotree.UI;
+package com.pumelotech.dev.pumelotree.ui;
 
 import android.Manifest;
 import android.annotation.TargetApi;

@@ -1,4 +1,4 @@
-package com.pumelotech.dev.pumelotree.Transfer.CallbackInterface;
+package com.pumelotech.dev.pumelotree.transfer.callback;
 
 /**
  * Created by x7che on 2016/7/14.

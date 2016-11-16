@@ -12,6 +12,7 @@ import com.pumelotech.dev.pumelotree.transfer.callback.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NavigableMap;
 import java.util.UUID;
 
 /**
@@ -40,13 +41,13 @@ public class ESLHandler implements TransferCallback {
     private BluetoothGattCharacteristic locationCharacteristic;
 
     private BluetoothGatt mBluetoothGatt;
-
+    private boolean connectionIsReady = false;
     private ArrayList<Byte> screenData;
     private boolean isLastPacket = false;
     private long mFileSize = 0;
     private long mTotalPackets = 0;
     private long mPacketNumber = 0;
-    private final int BYTES_IN_ONE_PACKET = 20;
+    private final int BYTES_IN_ONE_PACKET = 16;
 
     public final static String ERROR_DISCOVERY_SERVICE = "Error on discovering services";
     public final static String ERROR_WRITE_CHARACTERISTIC = "Error on writing characteristic";
@@ -60,12 +61,10 @@ public class ESLHandler implements TransferCallback {
 
     @Override
     public void onCharacteristicChanged(BluetoothGattCharacteristic characteristic) {
-        int request, opCode;
         if (characteristic.getUuid().equals(CONTROL_POINT_CHAR_UUID)) {
-            opCode = characteristic.getValue()[0];
-            request = characteristic.getValue()[1];
-            if(opCode == 1){
-                if(!isLastPacket) {
+            byte[] value = characteristic.getValue();
+            if (value[0] == 0) {
+                if (value[1] == 0) {
                     sendPacket();
                 }
             }
@@ -74,11 +73,16 @@ public class ESLHandler implements TransferCallback {
 
     @Override
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-
+        if (descriptor.getCharacteristic() == controlCharacteristic) {
+            connectionIsReady = true;
+        }
     }
 
     @Override
     public void onCharacteristicWrite(BluetoothGattCharacteristic characteristic, int status) {
+        if (characteristic.getUuid().equals(SCREEN_CHAR_UUID)) {
+            sendPacket();
+        }
 
     }
 
@@ -175,12 +179,15 @@ public class ESLHandler implements TransferCallback {
             screenCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
             screenCharacteristic.setValue(data);
             mBluetoothGatt.writeCharacteristic(screenCharacteristic);
-        }
-        // otherwise send packet of 20 bytes
-        else {
+        } else if (mPacketNumber < mTotalPackets) {           // otherwise send packet of 20 bytes
             screenCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
             screenCharacteristic.setValue(getNextPacket());
             mBluetoothGatt.writeCharacteristic(screenCharacteristic);
+        } else {
+            byte[] value = new byte[1];
+            value[0] = 0x01;
+            controlCharacteristic.setValue(value);
+            mBluetoothGatt.writeCharacteristic(controlCharacteristic);
         }
     }
 
@@ -217,15 +224,38 @@ public class ESLHandler implements TransferCallback {
     private byte[] getNextPacket() {
         byte[] buffer = new byte[20];
         List<Byte> sublist;
-        if(mPacketNumber==(mTotalPackets-1)){
-            sublist = screenData.subList((int) mPacketNumber * BYTES_IN_ONE_PACKET,(int)mFileSize);
-        }else {
-            sublist = screenData.subList((int) mPacketNumber * BYTES_IN_ONE_PACKET, (int) (mPacketNumber+1) * BYTES_IN_ONE_PACKET);
+        if (mPacketNumber == (mTotalPackets - 1)) {
+            sublist = screenData.subList((int) mPacketNumber * BYTES_IN_ONE_PACKET, (int) mFileSize);
+        } else {
+            sublist = screenData.subList((int) mPacketNumber * BYTES_IN_ONE_PACKET, (int) (mPacketNumber + 1) * BYTES_IN_ONE_PACKET);
         }
-        for(int i=0;i<sublist.size();i++){
-            buffer[i] = sublist.get(i);
+
+        buffer[0] = (byte) (mPacketNumber / 256);
+        buffer[1] = (byte) mPacketNumber;
+        buffer[2] = 0;
+        buffer[3] = 0;
+        for (int i = 0; i < sublist.size(); i++) {
+            buffer[4 + i] = sublist.get(i);
         }
         return buffer;
 
+    }
+
+    public int startSendScreenData() {
+        if (controlCharacteristic == null) {
+            getCharacteristics();
+        }
+        if (!connectionIsReady) {
+            return 1;
+        }
+        byte[] value = new byte[5];
+        value[0] = 0x01;
+        value[1] = (byte) (screenData.size() / 256);
+        value[2] = (byte) screenData.size();
+        value[3] = 0x12;
+        value[4] = 0x34;
+        controlCharacteristic.setValue(value);
+        mBluetoothGatt.writeCharacteristic(controlCharacteristic);
+        return 0;
     }
 }

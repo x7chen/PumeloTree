@@ -10,8 +10,10 @@
 
     <style name="AppStart" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:background">@drawable/welcome</item>
+        <item name="android:windowFullscreen">true</item>
     </style>
     <style name="AppStartTranslucent" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
     </style>
+
 </resources>

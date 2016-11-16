@@ -4,20 +4,12 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.Window;
 import android.widget.ProgressBar;
 
 import com.pumelotech.dev.pumelotree.MyApplication;
 import com.pumelotech.dev.pumelotree.R;
-
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Administrator on 2016/9/2.
@@ -25,21 +17,15 @@ import java.util.concurrent.TimeUnit;
 public class WelComeActivity extends AppCompatActivity {
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
 
-        taskBackGroud();
-        AsyncTask<String,Integer,String> asyncTask = new AsyncTask<String, Integer, String>() {
-            @Override
-            protected String doInBackground(String... params) {
-                return null;
-            }
-        };
+        taskBackGround();
 
     }
 
-    void taskBackGroud() {
+    void taskBackGround() {
         final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar);
         new AsyncTask<String, Integer, String>() {
 

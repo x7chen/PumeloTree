@@ -22,10 +22,11 @@ public class ESLHandler implements TransferCallback {
 
     static private ESLHandler mESLHandler;
     private LeConnector leConnector;
-    private final static String TAG = MyApplication.DebugTag;
+    private EslProgressCallback eslProgressCallback;
+    private final static String TAG = MyApplication.DebugTag+"ESL";
     public static final UUID ESL_SERVICE_UUID = UUID.fromString("DA1A1800-AF00-40C6-BCDA-E093AF5A45DB");
-    public static final UUID SCREEN_CHAR_UUID = UUID.fromString("DA1A1801-AF00-40C6-BCDA-E093AF5A45DB");
-    public static final UUID CONTROL_POINT_CHAR_UUID = UUID.fromString("DA1A1802-AF00-40C6-BCDA-E093AF5A45DB");
+    public static final UUID CONTROL_POINT_CHAR_UUID = UUID.fromString("DA1A1801-AF00-40C6-BCDA-E093AF5A45DB");
+    public static final UUID SCREEN_CHAR_UUID = UUID.fromString("DA1A1802-AF00-40C6-BCDA-E093AF5A45DB");
     public static final UUID PRICE_CHAR_UUID = UUID.fromString("DA1A1803-AF00-40C6-BCDA-E093AF5A45DB");
     public static final UUID PRODUCT_ID_CHAR_UUID = UUID.fromString("DA1A1804-AF00-40C6-BCDA-E093AF5A45DB");
     public static final UUID TYPE_CHAR_UUID = UUID.fromString("DA1A1805-AF00-40C6-BCDA-E093AF5A45DB");
@@ -42,7 +43,7 @@ public class ESLHandler implements TransferCallback {
 
     private BluetoothGatt mBluetoothGatt;
     private boolean connectionIsReady = false;
-    private ArrayList<Byte> screenData;
+    private ArrayList<Byte> screenData = new ArrayList<>();
     private boolean isLastPacket = false;
     private long mFileSize = 0;
     private long mTotalPackets = 0;
@@ -76,6 +77,11 @@ public class ESLHandler implements TransferCallback {
         if (descriptor.getCharacteristic() == controlCharacteristic) {
             connectionIsReady = true;
         }
+    }
+
+    @Override
+    public void onServicesDiscovered() {
+        getCharacteristics();
     }
 
     @Override
@@ -114,7 +120,9 @@ public class ESLHandler implements TransferCallback {
 
         return mESLHandler;
     }
-
+    public void setEslProgressCallback(EslProgressCallback callback){
+        eslProgressCallback = callback;
+    }
     void getCharacteristics() {
         if (leConnector != null) {
             mBluetoothGatt = leConnector.getBluetoothGatt();
@@ -167,8 +175,9 @@ public class ESLHandler implements TransferCallback {
 
     private void sendPacket() {
         mPacketNumber++;
+        Log.i(TAG,"sendprogress"+mPacketNumber);
         //If last packet then send only remaining bytes
-        if (mPacketNumber == mTotalPackets) {
+        if (mPacketNumber > mTotalPackets) {
             Log.d(TAG, "This is last packet, packet number: " + mPacketNumber);
             isLastPacket = true;
             byte[] buffer = getNextPacket();
@@ -180,7 +189,8 @@ public class ESLHandler implements TransferCallback {
             screenCharacteristic.setValue(data);
             mBluetoothGatt.writeCharacteristic(screenCharacteristic);
         } else if (mPacketNumber < mTotalPackets) {           // otherwise send packet of 20 bytes
-            screenCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+            //screenCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
+            screenCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
             screenCharacteristic.setValue(getNextPacket());
             mBluetoothGatt.writeCharacteristic(screenCharacteristic);
         } else {
@@ -189,6 +199,7 @@ public class ESLHandler implements TransferCallback {
             controlCharacteristic.setValue(value);
             mBluetoothGatt.writeCharacteristic(controlCharacteristic);
         }
+        eslProgressCallback.updataProgress((int) (mPacketNumber*100/mTotalPackets));
     }
 
     private int getNumberOfPackets() {
@@ -205,8 +216,9 @@ public class ESLHandler implements TransferCallback {
 
     /**
      * Here selected IntelHex file will be converted into Binary format
+     * @param data
      */
-    public void setScreenData(byte[] data) {
+    public void setScreenData(Byte[] data) {
         screenData.clear();
         for (Byte b : data) {
             screenData.add(b);
@@ -237,6 +249,12 @@ public class ESLHandler implements TransferCallback {
         for (int i = 0; i < sublist.size(); i++) {
             buffer[4 + i] = sublist.get(i);
         }
+
+        StringBuilder builder = new StringBuilder();
+        for(byte b:buffer) {
+            builder.append(String.format("%02X ", b));
+        }
+        Log.i(TAG,builder.toString());
         return buffer;
 
     }
@@ -249,7 +267,7 @@ public class ESLHandler implements TransferCallback {
             return 1;
         }
         byte[] value = new byte[5];
-        value[0] = 0x01;
+        value[0] = 0x00;
         value[1] = (byte) (screenData.size() / 256);
         value[2] = (byte) screenData.size();
         value[3] = 0x12;

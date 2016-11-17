@@ -12,4 +12,5 @@ public interface TransferCallback {
     void onCharacteristicRead(BluetoothGattCharacteristic characteristic);
     void onCharacteristicChanged(BluetoothGattCharacteristic characteristic);
     void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status);
+    void onServicesDiscovered();
 }

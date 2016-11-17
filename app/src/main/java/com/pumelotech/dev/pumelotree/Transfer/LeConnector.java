@@ -88,6 +88,11 @@ public class LeConnector extends BluetoothGattCallback {
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
 
         }
+
+        @Override
+        public void onServicesDiscovered() {
+
+        }
     };
     public static final int STATE_DISCONNECTED = 0;
     public static final int STATE_CONNECTING = 1;
@@ -124,6 +129,7 @@ public class LeConnector extends BluetoothGattCallback {
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
         if (status == BluetoothGatt.GATT_SUCCESS) {
             mServices = gatt.getServices();
+            mTransferCallback.onServicesDiscovered();
         } else {
             mConnectionCallback.onError(ERROR_DISCOVERY_SERVICE, status);
         }
@@ -153,6 +159,7 @@ public class LeConnector extends BluetoothGattCallback {
     @Override
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         super.onDescriptorWrite(gatt, descriptor, status);
+        mTransferCallback.onDescriptorWrite(gatt,descriptor,status);
     }
 
     public BluetoothGatt getBluetoothGatt() {

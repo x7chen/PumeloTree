@@ -204,31 +204,21 @@ public class ESLHandler implements TransferCallback {
         }else {
             isChecking = false;
         }
-        mPacketNumber++;
+
         Log.i(TAG, "sendprogress" + mPacketNumber);
         //If last packet then send only remaining bytes
-        if (mPacketNumber > mTotalPackets) {
-            Log.d(TAG, "This is last packet, packet number: " + mPacketNumber);
-            isLastPacket = true;
-            byte[] buffer = getNextPacket();
-            byte[] data = new byte[getBytesInLastPacket()];
-            for (int i = 0; i < getBytesInLastPacket(); i++) {
-                data[i] = buffer[i];
-            }
-            screenCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
-            screenCharacteristic.setValue(data);
-            mBluetoothGatt.writeCharacteristic(screenCharacteristic);
-        } else if (mPacketNumber < mTotalPackets) {           // otherwise send packet of 20 bytes
+         if (mPacketNumber < mTotalPackets) {           // otherwise send packet of 20 bytes
             screenCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE);
             //screenCharacteristic.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
             screenCharacteristic.setValue(getNextPacket());
             mBluetoothGatt.writeCharacteristic(screenCharacteristic);
-        } else {
+        } else if(mPacketNumber == mTotalPackets){
             byte[] value = new byte[1];
             value[0] = 0x01;
             controlCharacteristic.setValue(value);
             mBluetoothGatt.writeCharacteristic(controlCharacteristic);
         }
+        mPacketNumber++;
         eslProgressCallback.updataProgress((int) (mPacketNumber * 100 / mTotalPackets));
     }
 

@@ -1,0 +1,33 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.LabelListActivity">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:id="@+id/esl_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_below="@+id/toolbar_pigeon_list" />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView_pigeon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/esl_progress" />
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar_pigeon_list"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:theme="@style/ToolbarTheme"
+            android:background="@color/colorPrimaryDark"
+            android:layout_alignParentTop="true" />
+    </RelativeLayout>
+
+
+
+</FrameLayout>

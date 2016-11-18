@@ -44,6 +44,7 @@ public class LabelListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_label_list);
         mToolbar = (Toolbar) findViewById(R.id.toolbar_pigeon_list);
+        mToolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
         setSupportActionBar(mToolbar);
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView_pigeon);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));

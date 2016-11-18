@@ -327,7 +327,7 @@ public class LabelDemoData {
             goods.Name = goodsName[i];
             goods.Package = "称重";
             goods.Unit = "500克";
-            goods.Price = String.format(Locale.CHINA,"%1.2f",new Random().nextFloat()*10);
+            goods.Price = String.format(Locale.CHINA,"%1.1f",new Random().nextFloat()*10);
             goods.Identifier = "1234567890123"+i;
             goods.Supervisor = "周红";
             goods.Origin = "江西";

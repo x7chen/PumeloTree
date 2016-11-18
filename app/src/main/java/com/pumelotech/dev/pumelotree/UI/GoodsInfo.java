@@ -11,4 +11,14 @@ public class GoodsInfo {
     public String Supervisor;
     public String Identifier;
     public String Origin;
+
+    GoodsInfo(){
+        Name = "未填写";
+        Price = "未填写";
+        Package = "未填写";
+        Unit = "未填写";
+        Supervisor = "周红";
+        Identifier = "未填写";
+        Origin = "未填写";
+    }
 }

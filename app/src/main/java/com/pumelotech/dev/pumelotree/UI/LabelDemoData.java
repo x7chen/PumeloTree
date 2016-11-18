@@ -325,12 +325,12 @@ public class LabelDemoData {
         for (int i = 0; i < 10; i++) {
             GoodsInfo goods = new GoodsInfo();
             goods.Name = goodsName[i];
-            goods.Package = "包装：散";
-            goods.Unit = "单位：500克";
-            goods.Price = "￥"+ String.format(Locale.CHINA,"%1.2f",new Random().nextFloat()*10);
+            goods.Package = "称重";
+            goods.Unit = "500克";
+            goods.Price = String.format(Locale.CHINA,"%1.2f",new Random().nextFloat()*10);
             goods.Identifier = "1234567890123"+i;
             goods.Supervisor = "周红";
-            goods.Origin = "产地：江西";
+            goods.Origin = "江西";
             DemoData.add(goods);
         }
 

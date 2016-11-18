@@ -3,6 +3,7 @@ package com.pumelotech.dev.pumelotree.ui;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
@@ -48,6 +49,7 @@ public class LabelListActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         allLabels = LabelDemoData.DemoData;
         MyApplication.mLabelList = allLabels;
+        MyApplication.LabelListActivity = this;
         mLabelRecyclerAdapter = new LabelRecyclerAdapter(allLabels);
         recyclerView.setAdapter(mLabelRecyclerAdapter);
 //        recyclerView.setOnScrollListener(new HidingScrollListener() {
@@ -136,7 +138,8 @@ public class LabelListActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.label_add) {
-
+            Intent intent = new Intent(this,LabelEditActivity.class);
+            startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
     }

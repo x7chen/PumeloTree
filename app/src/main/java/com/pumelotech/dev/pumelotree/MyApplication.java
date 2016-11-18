@@ -18,7 +18,7 @@ public class MyApplication extends Application {
     public static Typeface font;
     public static Context context;
     public static LeConnector gLeConnector;
-    public static LabelListActivity labelListActivity;
+    public static LabelListActivity LabelListActivity;
     public static List<GoodsInfo> mLabelList;
     @Override
     public void onCreate() {

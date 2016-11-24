@@ -5,10 +5,16 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.util.JsonWriter;
 
 import com.pumelotech.dev.pumelotree.MyApplication;
 
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 
 /**
@@ -17,7 +23,9 @@ import java.util.ArrayList;
 public class LabelDrawer {
     Bitmap bitmap;
     ArrayList<Byte> labelData;
-    public LabelDrawer(GoodsInfo goods){
+
+
+    public LabelDrawer(GoodsInfo goods) {
         bitmap = Bitmap.createBitmap(296, 128, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         canvas.drawColor(Color.WHITE);
@@ -31,15 +39,15 @@ public class LabelDrawer {
         canvas.drawText(goods.Name, 10, 30, paint);
         paint.setTextSize(48);
         paint.setTypeface(Typeface.DEFAULT);
-        canvas.drawText("￥"+goods.Price, 10, 90, paint);
+        canvas.drawText("￥" + goods.Price, 10, 90, paint);
         paint.setTypeface(MyApplication.font);
         paint.setTextSize(12);
-        canvas.drawText("单位:"+goods.Unit, 180, 52, paint);
+        canvas.drawText("单位:" + goods.Unit, 180, 52, paint);
         paint.setTypeface(MyApplication.font);
         paint.setTextSize(12);
-        canvas.drawText("包装:"+goods.Package, 180, 70, paint);
+        canvas.drawText("包装:" + goods.Package, 180, 70, paint);
         paint.setTextSize(12);
-        canvas.drawText("产地:"+goods.Origin, 180, 88, paint);
+        canvas.drawText("产地:" + goods.Origin, 180, 88, paint);
         paint.setTextSize(12);
         canvas.drawText("编码:" + goods.Identifier, 180, 106, paint);
         paint.setTextSize(12);
@@ -62,17 +70,23 @@ public class LabelDrawer {
                 labelData.add(set);
             }
         }
+        try {
+            JSONObject jsonObject = new JSONObject().put("hello", 100);
+            jsonObject.put("obj","hello");
+        } catch (JSONException ex) {
 
+        }
     }
 
-    public Bitmap getBitMap(){
+    public Bitmap getBitMap() {
         return bitmap;
     }
-    public ArrayList<Byte> getLabelDataList()
-    {
+
+    public ArrayList<Byte> getLabelDataList() {
         return labelData;
     }
-    public Byte[] getLabelData(){
+
+    public Byte[] getLabelData() {
         return labelData.toArray(new Byte[4736]);
     }
 }

@@ -41,7 +41,7 @@ public class WelComeActivity extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                Intent intent = new Intent(WelComeActivity.this, LabelListActivity.class);
+                Intent intent = new Intent(WelComeActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
                 return null;

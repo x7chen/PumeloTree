@@ -13,6 +13,7 @@ import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -24,10 +25,18 @@ import com.pumelotech.dev.pumelotree.transfer.LeConnector;
 import com.pumelotech.dev.pumelotree.transfer.callback.ConnectionCallback;
 import com.pumelotech.dev.pumelotree.transfer.callback.EslProgressCallback;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    String TAG = MyApplication.DebugTag;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     ProgressBar eslProgress;
 
@@ -57,6 +66,43 @@ public class MainActivity extends AppCompatActivity {
         eslProgress = (ProgressBar) findViewById(R.id.esl_progress);
         ESLHandler.getInstance().setEslProgressCallback(eslProgressCallback);
         draw();
+
+    }
+
+
+    protected String urlConn() {
+        String rev = null;
+        try {
+            // URL
+            URL url = new URL("http://192.168.1.195:8000");
+            // HttpURLConnection
+            HttpURLConnection httpconn = (HttpURLConnection) url.openConnection();
+            //Thread.sleep(1000);
+            if (httpconn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                // InputStreamReader
+                InputStreamReader isr = new InputStreamReader(httpconn.getInputStream(), "utf-8");
+                int i;
+                String content = "";
+                // read
+                while ((i = isr.read()) != -1) {
+                    content = content + (char) i;
+                }
+                isr.close();
+                //设置TextView
+                rev = content;
+                Log.i(TAG,"连接成功");
+            }
+            else {
+                Log.i(TAG,"连接失败");
+            }
+            //disconnect
+            httpconn.disconnect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i(TAG,"异常");
+        }
+        return rev;
     }
 
     EslProgressCallback eslProgressCallback = new EslProgressCallback() {
@@ -121,9 +167,9 @@ public class MainActivity extends AppCompatActivity {
         paint.setTextSize(12);
         canvas.drawText(goods.Origin, 180, 88, paint);
         paint.setTextSize(12);
-        canvas.drawText("编码 "+goods.Identifier, 180, 106, paint);
+        canvas.drawText("编码 " + goods.Identifier, 180, 106, paint);
         paint.setTextSize(12);
-        canvas.drawText("物价员："+goods.Supervisor, 180, 124, paint);
+        canvas.drawText("物价员：" + goods.Supervisor, 180, 124, paint);
         paint.setTextSize(12);
         canvas.drawText("价格举报电话：12358", 10, 124, paint);
         ImageView layout = (ImageView) findViewById(R.id.canvas_imageView);
@@ -162,12 +208,23 @@ public class MainActivity extends AppCompatActivity {
         layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ESLHandler.getInstance().setScreenData(test.toArray(new Byte[4736]));
-                ESLHandler.getInstance().startSendScreenData();
+//                ESLHandler.getInstance().setScreenData(test.toArray(new Byte[4736]));
+//                ESLHandler.getInstance().startSendScreenData();
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String str = null;
+
+                        str = urlConn();
+                        if (str != null)
+                            Log.i(TAG, str);
+                    }
+                }).start();
+
             }
         });
     }
-
 
 
     void drawScreen_t(ArrayList<Byte> src) {
@@ -196,5 +253,11 @@ public class MainActivity extends AppCompatActivity {
         layout.setScaleX(3);
         layout.setScaleY(3);
         layout.setImageBitmap(bitmap);
+    }
+
+    private class CommonException extends Exception {
+        CommonException(String str) {
+            Log.i("Pumelo", str);
+        }
     }
 }
